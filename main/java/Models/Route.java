@@ -1,9 +1,10 @@
 package Models;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.Objects;
 
-public class Route implements Comparable<Route>, Validator {
+public class Route implements Comparable<Route>, Validator, Serializable {
     private int id;
     private String name;
     private Coordinates coordinates;
