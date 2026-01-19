@@ -1,8 +1,18 @@
 package Managers;
 import ConsoleOperations.Printable;
 import Exceptions.EmptyCollectionException;
+import Models.Location;
 import Models.Route;
-import java.util.*;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class CollectionManager {
     private final Printable console;
@@ -22,12 +32,10 @@ public class CollectionManager {
     }
 
     private void recalculateNextId() {
-        int maxId = 0;
-        for (Route r : routes) {
-            if (r.getId() > maxId) {
-                maxId = r.getId();
-            }
-        }
+        int maxId = routes.stream()
+                .mapToInt(Route::getId)
+                .max()
+                .orElse(0);
         this.nextId = maxId + 1;
         if (this.nextId <= 0) {
             this.nextId = 1;
@@ -78,18 +86,11 @@ public class CollectionManager {
     }
 
     public boolean removeById(int id) {
-        Route toRemove = null;
-        for (Route r : routes) {
-            if (r.getId() == id) {
-                toRemove = r;
-                break;
-            }
-        }
-        if (toRemove != null) {
-            routes.remove(toRemove);
-            return true;
-        }
-        return false;
+        Optional<Route> toRemove = routes.stream()
+                .filter(r -> r.getId() == id)
+                .findFirst();
+        toRemove.ifPresent(routes::remove);
+        return toRemove.isPresent();
     }
 
     public boolean updateById(int id, Route newRoute) throws EmptyCollectionException {
@@ -101,13 +102,10 @@ public class CollectionManager {
             return false;
         }
 
-        Route old = null;
-        for (Route r : routes) {
-            if (r.getId() == id) {
-                old = r;
-                break;
-            }
-        }
+        Route old = routes.stream()
+                .filter(r -> r.getId() == id)
+                .findFirst()
+                .orElse(null);
 
         if (old == null) {
             return false;
@@ -127,9 +125,9 @@ public class CollectionManager {
     }
 
     public List<Route> getAllSorted() {
-        List<Route> list = new ArrayList<Route>(routes);
-        Collections.sort(list);
-        return list;
+        return routes.stream()
+                .sorted()
+                .collect(Collectors.toList());
     }
 
     public String getInfoString() {
@@ -145,13 +143,9 @@ public class CollectionManager {
             throw new EmptyCollectionException("Коллекция пуста.");
         }
 
-        Route max = null;
-        for (Route r : routes) {
-            if (max == null || r.compareTo(max) > 0) {
-                max = r;
-            }
-        }
-        return max;
+        return routes.stream()
+                .max(Comparator.naturalOrder())
+                .orElseThrow(() -> new EmptyCollectionException("Коллекция пуста."));
     }
 
     public Route getMin() throws EmptyCollectionException {
@@ -159,13 +153,9 @@ public class CollectionManager {
             throw new EmptyCollectionException("Коллекция пуста.");
         }
 
-        Route min = null;
-        for (Route r : routes) {
-            if (min == null || r.compareTo(min) < 0) {
-                min = r;
-            }
-        }
-        return min;
+        return routes.stream()
+                .min(Comparator.naturalOrder())
+                .orElseThrow(() -> new EmptyCollectionException("Коллекция пуста."));
     }
 
     public boolean addIfMax(Route route) throws EmptyCollectionException {
@@ -203,85 +193,67 @@ public class CollectionManager {
     public int removeLower(Route pivot) {
         if (pivot == null) return 0;
 
-        List<Route> toRemove = new ArrayList<Route>();
-        for (Route r : routes) {
-            if (r.compareTo(pivot) < 0) {
-                toRemove.add(r);
-            }
-        }
+        List<Route> toRemove = routes.stream()
+                .filter(r -> r.compareTo(pivot) < 0)
+                .collect(Collectors.toList());
 
-        int count = toRemove.size();
-        for (Route r : toRemove) {
-            routes.remove(r);
-        }
-        return count;
+        routes.removeAll(toRemove);
+        return toRemove.size();
     }
 
     public boolean removeAnyByDistance(Long distance) {
         if (distance == null) return false;
 
-        Route toRemove = null;
-        for (Route r : routes) {
-            Long d = r.getDistance();
-            if (d != null && d.equals(distance)) {
-                toRemove = r;
-                break;
-            }
-        }
+        Optional<Route> toRemove = routes.stream()
+                .filter(r -> distance.equals(r.getDistance()))
+                .findFirst();
 
-        if (toRemove != null) {
-            routes.remove(toRemove);
-            return true;
-        }
-        return false;
+        toRemove.ifPresent(routes::remove);
+        return toRemove.isPresent();
     }
 
     public List<Route> filterGreaterThanDistance(Long distance) {
-        List<Route> result = new ArrayList<Route>();
         if (distance == null) {
-            return result;
+            return new ArrayList<>();
         }
 
-        for (Route r : routes) {
-            Long d = r.getDistance();
-            if (d != null && d > distance) {
-                result.add(r);
-            }
-        }
-        return result;
+        return routes.stream()
+                .filter(r -> r.getDistance() != null && r.getDistance() > distance)
+                .collect(Collectors.toList());
     }
 
     public List<Long> getDistancesDescending() {
-        List<Long> result = new ArrayList<Long>();
-
-        for (Route r : routes) {
-            Long d = r.getDistance();
-            if (d != null) {
-                result.add(d);
-            }
-        }
-
-        // сортировка по убыванию
-        Collections.sort(result, new Comparator<Long>() {
-            @Override
-            public int compare(Long a, Long b) {
-                return b.compareTo(a);
-            }
-        });
-
-        return result;
+        return routes.stream()
+                .map(Route::getDistance)
+                .filter(Objects::nonNull)
+                .sorted(Comparator.reverseOrder())
+                .collect(Collectors.toList());
     }
 
     public Route getById(int id) {
-        for (Route r : routes) {
-            if (r.getId() == id) {
-                return r;
-            }
-        }
-        return null;
+        return routes.stream()
+                .filter(r -> r.getId() == id)
+                .findFirst()
+                .orElse(null);
     }
 
     public List<Route> getSorted() {
         return getAllSorted();
+    }
+
+    public List<Route> getSortedByLocation() {
+        return sortByLocation(new ArrayList<>(routes));
+    }
+
+    public List<Route> sortByLocation(List<Route> routesToSort) {
+        Comparator<Location> locationComparator = Comparator
+                .comparing(Location::getX, Comparator.nullsFirst(Comparator.naturalOrder()))
+                .thenComparingInt(Location::getY)
+                .thenComparing(Location::getZ, Comparator.nullsFirst(Comparator.naturalOrder()))
+                .thenComparing(Location::getName, Comparator.nullsFirst(Comparator.naturalOrder()));
+
+        return routesToSort.stream()
+                .sorted(Comparator.comparing(Route::getFrom, Comparator.nullsFirst(locationComparator)))
+                .collect(Collectors.toList());
     }
 }

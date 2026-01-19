@@ -1,7 +1,8 @@
 package Models;
+import java.io.Serializable;
 import java.util.Objects;
 
-public class Location implements Validator {
+public class Location implements Validator, Serializable {
     private Double x;
     private int y;
     private Float z;
