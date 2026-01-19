@@ -1,0 +1,22 @@
+show
+
+print_field_descending_distance
+
+filter_greater_than_distance 50
+remove_any_by_distance 100
+
+show
+
+remove_lower
+PivotRoute
+2.5
+250
+0.0
+0
+1.0
+PivotFrom
+
+100
+
+show
+exit

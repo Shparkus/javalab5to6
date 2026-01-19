@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<routes>
+    <route>
+        <id>1</id>
+        <name>Alpha</name>
+        <coordinates>
+            <x>10.5</x>
+            <y>100</y>
+        </coordinates>
+        <creationDate>1700000000000</creationDate>
+        <from>
+            <x>1.0</x>
+            <y>10</y>
+            <z>5.5</z>
+            <name>Start A</name>
+        </from>
+        <to>
+            <x>2.0</x>
+            <y>20</y>
+            <z>6.5</z>
+            <name>Finish A</name>
+        </to>
+        <distance>50</distance>
+    </route>
+
+    <route>
+        <id>2</id>
+        <name>Beta</name>
+        <coordinates>
+            <x>5.0</x>
+            <y>200</y>
+        </coordinates>
+        <creationDate>1700005000000</creationDate>
+        <from>
+            <x>0.0</x>
+            <y>-5</y>
+            <z>3.0</z>
+            <name>Start B</name>
+        </from>
+        <to>
+            <x>3.0</x>
+            <y>30</y>
+            <z>7.0</z>
+            <name>Finish B</name>
+        </to>
+        <distance>100</distance>
+    </route>
+</routes>
